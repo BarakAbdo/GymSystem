@@ -1,0 +1,92 @@
+﻿@model GymSystem.Application.Dtos.DashboardDtos.DashboardDto
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container-fluid mt-4">
+    <!-- الترويسة -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Dashboard</h2>
+            <small class="text-muted">Last updated: @Model.LastUpdated.ToString("hh:mm tt - dd MMM yyyy")</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="Attendances" asp-action="Index" class="btn btn-primary rounded-pill px-4">
+                Attendance
+            </a>
+            <a asp-controller="Members" asp-action="Index" class="btn btn-outline-dark rounded-pill px-4">
+                Members
+            </a>
+        </div>
+    </div>
+
+    <!-- الصف الأول: الإحصائيات الأساسية -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-primary text-white h-100">
+                <div class="card-body p-4">
+                    <div class="text-uppercase small opacity-75 mb-1">Total Members</div>
+                    <h2 class="fw-bold mb-0">@Model.TotalMembers</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-success text-white h-100">
+                <div class="card-body p-4">
+                    <div class="text-uppercase small opacity-75 mb-1">Active Subscriptions</div>
+                    <h2 class="fw-bold mb-0">@Model.ActiveSubscriptions</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-info text-dark h-100">
+                <div class="card-body p-4">
+                    <div class="text-uppercase small opacity-75 mb-1">Today's Check-Ins</div>
+                    <h2 class="fw-bold mb-0">@Model.TodayAttendances</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm rounded-4 bg-dark text-white h-100">
+                <div class="card-body p-4">
+                    <div class="text-uppercase small opacity-75 mb-1">Total Revenue</div>
+                    <h2 class="fw-bold mb-0 text-warning">@Model.TotalRevenue.ToString("N2") <small class="fs-6">SAR</small></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- الصف الثاني: مؤشرات إضافية -->
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="text-muted small mb-1">Active Trainers</div>
+                    <h3 class="fw-bold mb-0">@Model.TotalTrainers</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="text-muted small mb-1">Expired Subscriptions</div>
+                    <h3 class="fw-bold text-danger mb-0">@Model.ExpiredSubscriptions</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-body p-4">
+                    <div class="text-muted small mb-1">Today's Revenue</div>
+                    <h3 class="fw-bold text-success mb-0">@Model.TodayRevenue.ToString("N2") <small class="fs-6">SAR</small></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

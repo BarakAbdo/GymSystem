@@ -1,0 +1,224 @@
+﻿@model IEnumerable<GymSystem.Application.Dtos.AttendanceDtos.AttendanceDto>
+
+@{
+    ViewData["Title"] = "Attendance Management";
+    var members = ViewBag.Members as IEnumerable<GymSystem.Application.Dtos.MemberDtos.MemberDto>;
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2 class="fw-bold text-dark">Attendance Management</h2>
+            <p class="text-muted mb-0">Track member check-ins, check-outs, and daily activity.</p>
+        </div>
+        <!-- زر فتح بوب أب تسجيل الحضور -->
+        <button type="button" class="btn btn-primary px-4 shadow-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#createAttendanceModal">
+            <i class="bi bi-plus-lg me-1"></i> Check-In Member
+        </button>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-body p-0">
+            <table class="table table-hover table-striped align-middle mb-0">
+                <thead class="table-dark text-uppercase fs-7">
+                    <tr>
+                        <th class="py-3 ps-4">ID</th>
+                        <th class="py-3">Member Name</th>
+                        <th class="py-3">Check-In Time</th>
+                        <th class="py-3">Check-Out Time</th>
+                        <th class="py-3">Status</th>
+                        <th class="py-3">Notes</th>
+                        <th class="py-3 text-center pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <!-- عرض الـ ID الرقمي -->
+                                <td class="ps-4 fw-bold text-secondary">@item.Id</td>
+                                <td class="fw-semibold text-primary">@item.MemberName</td>
+                                <td><i class="bi bi-box-arrow-in-right text-success me-1"></i> @item.CheckInTime.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>
+                                    @if (item.CheckOutTime.HasValue)
+                                    {
+                                        <text><i class="bi bi-box-arrow-right text-danger me-1"></i> @item.CheckOutTime.Value.ToString("yyyy-MM-dd HH:mm")</text>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary rounded-pill px-3">Still Inside</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.Status == "Present")
+                                    {
+                                        <span class="badge bg-success rounded-pill px-3">Present</span>
+                                    }
+                                    else if (item.Status == "Late")
+                                    {
+                                        <span class="badge bg-warning text-dark rounded-pill px-3">Late</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger rounded-pill px-3">@item.Status</span>
+                                    }
+                                </td>
+                                <td class="text-muted">@(string.IsNullOrEmpty(item.Notes) ? "-" : item.Notes)</td>
+                                <td class="text-center pe-4">
+                                    <!-- زر التعديل (يعتمد على UID) -->
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-warning px-3 me-1 rounded-pill"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#editAttendanceModal_@item.UID">
+                                        Edit
+                                    </button>
+
+                                    <!-- زر الحذف (يعتمد على UID) -->
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger px-3 rounded-pill"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteAttendanceModal_@item.UID">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- ================= النافذة المنبثقة للتعديل (Edit Modal) ================= -->
+                            <div class="modal fade" id="editAttendanceModal_@item.UID" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow rounded-4">
+                                        <form asp-action="Edit" asp-route-uid="@item.UID" method="post">
+                                            <div class="modal-header bg-warning text-dark px-4">
+                                                <h5 class="modal-title fw-bold">Edit Attendance (#@item.Id)</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body p-4 text-start">
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Member</label>
+                                                    <select name="MemberId" class="form-select rounded-3" required>
+                                                        @if (members != null)
+                                                        {
+                                                            foreach (var m in members)
+                                                            {
+                                                                <option value="@m.Id" selected="@(m.Id == item.MemberId ? "selected" : null)">@m.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Check-In Time</label>
+                                                    <input type="datetime-local" name="CheckInTime" value="@item.CheckInTime.ToString("yyyy-MM-ddTHH:mm")" class="form-control rounded-3" required />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Check-Out Time (Optional)</label>
+                                                    <input type="datetime-local" name="CheckOutTime" value="@item.CheckOutTime?.ToString("yyyy-MM-ddTHH:mm")" class="form-control rounded-3" />
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Status</label>
+                                                    <select name="Status" class="form-select rounded-3">
+                                                        <option value="Present" selected="@(item.Status == "Present")">Present</option>
+                                                        <option value="Late" selected="@(item.Status == "Late")">Late</option>
+                                                        <option value="Absent" selected="@(item.Status == "Absent")">Absent</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold">Notes</label>
+                                                    <textarea name="Notes" class="form-control rounded-3" rows="2">@item.Notes</textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer bg-light px-4 py-3">
+                                                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-warning px-4 rounded-pill fw-semibold text-dark">Save Changes</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ================= النافذة المنبثقة للحذف (Delete Modal) ================= -->
+                            <div class="modal fade" id="deleteAttendanceModal_@item.UID" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content border-0 shadow rounded-4">
+                                        <form asp-action="Delete" asp-route-uid="@item.UID" method="post">
+                                            <div class="modal-header bg-danger text-white px-4">
+                                                <h5 class="modal-title fw-bold">Confirm Deletion</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body p-4 text-start">
+                                                <div class="text-center py-3">
+                                                    <i class="bi bi-exclamation-triangle text-danger display-4 mb-3"></i>
+                                                    <p class="mb-1 text-muted">Are you sure you want to delete attendance record for:</p>
+                                                    <h5 class="text-danger fw-bold">@item.MemberName</h5>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer bg-light px-4 py-3">
+                                                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                                <button type="submit" class="btn btn-danger px-4 rounded-pill fw-semibold">Yes, Delete</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No attendance records found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- ================= النافذة المنبثقة لإضافة حضور جديد (Create Modal) ================= -->
+<div class="modal fade" id="createAttendanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <form asp-action="Create" method="post">
+                <div class="modal-header bg-primary text-white px-4">
+                    <h5 class="modal-title fw-bold">Check-In Member</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-start">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select Member</label>
+                        <select name="MemberId" class="form-select rounded-3" required>
+                            <option value="">-- Choose Member --</option>
+                            @if (members != null)
+                            {
+                                foreach (var m in members)
+                                {
+                                    <option value="@m.Id">@m.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Check-In Time</label>
+                        <input type="datetime-local" name="CheckInTime" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" class="form-control rounded-3" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Status</label>
+                        <select name="Status" class="form-select rounded-3">
+                            <option value="Present" selected>Present</option>
+                            <option value="Late">Late</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Notes</label>
+                        <textarea name="Notes" class="form-control rounded-3" rows="2" placeholder="Optional notes..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3">
+                    <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary px-4 rounded-pill fw-semibold">Save Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
